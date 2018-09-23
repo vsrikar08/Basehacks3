@@ -7,6 +7,7 @@
   "dependencies": {
     "clarifai": "^2.8.1",
     "expo": "^25.0.0",
+    "https": "^1.0.0",
     "react": "^16.5.2",
     "react-native": "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
     "react-native-blur": "^3.2.2",

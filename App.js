@@ -45,78 +45,7 @@ const postData = (url = ``, data = {}) => {
 };
 //Screens
 
-class MsgScreen extends React.Component{
-  static navigationOptions={
-    title:'Messages'
-  }
-  constructor(props){
-    super(props);
-    this.state = {
-      array: [{to:{username:'Loading'},from:{username:''}}],
-      refreshing:false
-    }
-  }
-  componentDidMount(){
-    fetch('https://hohoho-backend.herokuapp.com/messages')
-    .then((res)=>(res.json()))
-    .then((data)=>{
-      console.log('data')
-      this.setState({array:data.messages})
-    })
-    .catch(function(err){
-      console.log(err);
-    })
-  }
-  _onRefresh(){
-    this.setState({refreshing:true})
-    this.setState({array:ingredientsArray,refreshing:false})
-    .catch(function(err){
-      console.log(err);
-    })
-  }
-  render(){
-    const ds = new ListView.DataSource({rowHasChanged:(r1,r2)=>r1!==r2})
-    return(
-      <View  style={styles.container}>
-        <ListView
-          dataSource={ds.cloneWithRows(this.state.array)}
-          renderRow={(rowData) => {
-            console.log('rowData')
-            return (<View style={{margin:10}}>
-            <Text style={styles.textSmol}>{rowData.Name}</Text>
-            <Text style={styles.textSmol}>Calories: {rowData.calories}</Text>
-            <Text style={styles.textSmol}>Protein: {rowData.protein}</Text>
-            {rowData.photo?<Image source={{uri: rowData.photo}}
-       style={{width: 400, height: 400}} />:<Text>false</Text>}
-            {rowData.location&&rowData.location.latitude?(<MapView
-              region={{
-                latitude:rowData.location.latitude,
-                longitude:rowData.location.longitude,
-                latitudeDelta:0.5,
-                longitudeDelta:0.25
-              }}
-              height={100}
-              width={100}
-              >
-              <MapView.Marker
-                coordinate={{
-                  latitude:rowData.location.latitude,
-                  longitude:rowData.location.longitude
-                }}
-                title={rowData.from.username}
-                />
-            </MapView>):<Text></Text>}
-          </View>)}}
-          refreshControl={<RefreshControl
-            refreshing={this.state.refreshing}
-            onRefresh={this._onRefresh.bind(this)}
-          />}
-        />
-    </View>
-    )
-  }
 
-}
 class LoginScreen extends React.Component {
   static navigationOptions = {
     title: 'Login'
@@ -213,12 +142,11 @@ class UserScreen extends React.Component{
     super(props);
     this.state = {
       stats:{
-        name:"Cat",
-        calories: "N/A",
-        tfat:"N/A"
+        name:"N/A",
+        calories: "N/A"
       },
       refreshing:false,
-      imguri:"https://image.freepik.com/free-photo/cute-cat-picture_1122-449.jpg"
+      imguri:"https://i.imgur.com/moFlYc5.jpg"
     }
   }
   componentDidMount(){
@@ -246,20 +174,43 @@ class UserScreen extends React.Component{
         var amp = response.outputs[0].data.concepts[0].name;
         console.log(amp)
 
-        var http = new XMLHttpRequest();
-        var url = "https://trackapi.nutritionix.com/v2/natural/nutrient";
-        http.open("POST", url, true);
+    var http = require("https");
 
-        http.setRequestHeader('x-app-id', 'b1b12c23');
-        http.setRequestHeader('x-app-key', 'ba69f4c3b572e2f9865d6e7ac176d5b6');
-        http.setRequestHeader("Content-Type","application/json; charset=utf-8");
+    var options = {
+      "method": "GET",
+      "hostname": [
+        "trackapi",
+        "nutritionix",
+        "com"
+      ],
+      "path": [
+        "v2",
+        "search",
+        "item"
+      ],
+      "headers": {
+        "x-app-id": "b1b12c23",
+        "x-app-key": "ba69f4c3b572e2f9865d6e7ac176d5b6",
+        "Cache-Control": "no-cache",
+        "Postman-Token": "1a7263b2-d7f0-4698-bded-6d5652ebff39"
+      }
+    };
 
-        http.onreadystatechange = function() {
-            if(http.readyState == 4 && http.status == 200) {
-                alert(http.responseText);
-            }
-        }
-        http.send(params);
+    var req = http.request(options, function (res) {
+      var chunks = [];
+
+      res.on("data", function (chunk) {
+        chunks.push(chunk);
+      });
+
+      res.on("end", function () {
+        var body = Buffer.concat(chunks);
+        console.log(body.toString());
+        this.setState({calories:body.foods[0].nf_calories})
+      });
+    });
+
+req.end();
       })
 
         this.setState({imguri:uri})
@@ -276,7 +227,7 @@ class UserScreen extends React.Component{
   render(){
     return(
       <View style={{display:'flex',flex:1}}>
-        <TouchableOpacity style={{display:'flex', flex:1}} delayLongPress={1000} onLongPress={()=>{this.sendLocation()}}><ImageBackground blurRadius={3} style={{justifyContent:'center',alignItems:'center',flex:1}} source={{uri:this.state.imguri}} ><Text style={{fontSize:50}}>{this.state.stats.name} </Text><Text style={{fontSize:50}}>Calories: {this.state.stats.calories} </Text><Text style={{fontSize:50}}>Trans Fat: {this.state.stats.tfat} </Text></ImageBackground></TouchableOpacity>
+        <TouchableOpacity style={{display:'flex', flex:1}} delayLongPress={1000} onLongPress={()=>{this.sendLocation()}}><ImageBackground blurRadius={3} style={{justifyContent:'center',alignItems:'center',flex:1}} source={{uri:this.state.imguri}} ><Text style={{fontSize:50}}>{this.state.stats.name} </Text><Text style={{fontSize:50}}>Calories: {this.state.stats.calories} </Text></ImageBackground></TouchableOpacity>
       </View>
     )
   }
@@ -332,9 +283,6 @@ class SwiperScreen extends React.Component {
       <Swiper>
         <View style={{flex:1}}>
           <UserScreen/>
-        </View>
-        <View style={{flex:1}}>
-          <MsgScreen/>
         </View>
       </Swiper>
     </View>
